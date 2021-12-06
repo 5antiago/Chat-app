@@ -6,6 +6,8 @@ const path = require("path");
 const http = require("http");
 const server = http.createServer(app);
 
+const dotenv = require("dotenv");
+
 const {Server} = require("socket.io");
 
 const io = new Server(server);
@@ -31,6 +33,6 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, () => {
+server.listen(process.env.PORT, () => {
     console.log("Server running");
 });
