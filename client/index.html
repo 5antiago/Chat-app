@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <style>
+        body{
+            margin: 0;
+            background-color: rgb(44, 44, 44);
+            font-family: 'Open Sans', sans-serif;
+        }
+        header{
+            position: sticky;  
+            top: 0;
+            flex-direction: column;
+            background: rgba(15, 15, 15, 0.384);
+            height: 3rem; 
+            backdrop-filter: blur(5px);
+            color: #fff;
+            padding: 1.25rem 1.25rem;
+        }
+        h2{
+            margin: 0 0 0.25rem 0;
+        }
+        #form{  
+            position: sticky;  
+            bottom: 0;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.15);
+            height: 3rem; 
+        }
+        .input-area{
+            padding: 0.25rem; 
+            display: flex; 
+            height: 3rem; 
+            box-sizing: border-box; 
+            
+        }
+        .input{
+            border: none; 
+            padding: 0 1rem; 
+            flex-grow: 1; 
+            border-radius: 2rem; 
+            margin: 0.25rem;
+            height: 2rem;
+        }
+        #input:focus{
+            outline: none;
+        }
+        .input-area > button{
+            background: #333;
+            border: none; 
+            padding: 0 1rem; 
+            margin: 0.25rem; 
+            border-radius: 3px; 
+            outline: none; 
+            color: #fff;
+        }
+        #messages{
+            display: flex;
+            flex-direction: column;
+            margin: 1rem; 
+            padding: 0;
+            min-height: calc(100vh - 10.5rem);
+            
+        }
+        .message{ 
+            padding: 0.5rem 1rem; 
+            margin: 0.25rem;
+            border-radius: 10px;
+            overflow-wrap: break-word;
+            width: 70%;
+        }
+        .send{
+            align-self: flex-end;
+            background-color: blanchedalmond;
+        }
+        .received{
+            align-self: flex-start;
+            background-color: aquamarine;
+        }
+        #typing{
+            position: relative;
+
+        }
+        .hidden{display: none;}
+        .server-message{
+            color: #ffffffd4;
+            background-color: rgb(133, 133, 133, 0.38);
+            align-self: center;
+            border-radius: 10px;
+            padding: 0.5rem;
+            margin: 0.25rem
+        }
+        .modal{
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(15, 15, 15, 0.904);
+            
+        }
+        #input-nick{
+            border-radius: 8px;
+        }
+        .modal-content {
+            color: #dbdbdb;
+            background-color: rgb(73, 73, 73);
+            margin: 15% auto; 
+            padding: 20px;  
+            width: 80%; 
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <p>Ingrese su nombre de Usuario</p>
+            <form id="form-nick" autocomplete="off"><input type="text" id="input-nick"class="input"></form>
+            
+        </div>
+    </div>
+    <header>
+        <h2>Chat Room</h2>
+        <label id="users-connected">2 Usuarios conectados</label>
+        <label id="typing" class="hidden">Alguien está escribiendo</label>
+    </header>
+    <div id="messages"></div>
+    <form id="form">
+        <div class="input-area">
+            <input class="input" type="text" id="input" autocomplete="off"/> <button>Enviar</button>
+        </div>
+        
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        var messages = document.getElementById("messages");
+
+        document.getElementById("form-nick").addEventListener("submit", (e)=>{
+            e.preventDefault();
+            var input = document.getElementById("input-nick");
+            if(input.value){
+                socket.emit('register', input.value);
+                document.getElementById("modal").style.display="none";
+            }
+            let item = document.createElement('div');
+            item.textContent = "Te has unido al chat";
+            item.classList.add("server-message");
+            messages.appendChild(item);
+        });
+        document.getElementById("form").addEventListener("submit", (e)=>{
+            e.preventDefault();
+            var input = document.getElementById("input"); 
+            if(input.value){
+                socket.emit('message', input.value);
+                let message = document.createElement('div');
+                message.textContent = input.value;
+                message.classList.add("send", "message");
+                messages.appendChild(message);
+                input.value = '';
+                window.scrollTo(0, document.getElementById("messages").scrollHeight);
+            }
+        });
+        socket.on('message', (msg)=>{
+            var item = document.createElement('div');
+            item.textContent = msg;
+            item.classList.add("message", "received");
+            messages.appendChild(item);
+            window.scrollTo(0, document.getElementById("messages").scrollHeight);
+        });
+        let lasttime = Date.now();
+        let timer = setTimeout(()=>{
+            socket.emit("typing", 0);
+        },
+        1500);
+        document.getElementById("input").addEventListener("keyup", (e)=>{
+            if(e.key === "Enter"){
+                return;
+            }
+            if ((Date.now() - lasttime) > 700){
+                clearTimeout(timer)
+                socket.emit('typing', 1);
+                lasttime = Date.now();
+                timer = setTimeout(()=>{
+                    socket.emit("typing", 0);
+                    },
+                1500);
+            }
+        });
+        socket.on("typing", (msg)=>{
+            if(msg === 1){
+                if(document.getElementById("typing").classList.value === "hidden"){
+                    document.getElementById("users-connected").classList.toggle("hidden");
+                    document.getElementById("typing").classList.toggle("hidden");
+                }
+            }
+            if(msg === 0){
+                if(document.getElementById("typing").classList.value !== "hidden"){
+                document.getElementById("typing").classList.toggle("hidden");
+                document.getElementById("users-connected").classList.toggle("hidden");
+                }
+            }
+        });
+        socket.on('register', (msg)=>{
+            var item = document.createElement('div');
+            item.textContent = msg;
+            item.classList.add("server-message");
+            messages.appendChild(item);
+            window.scrollTo(0, document.getElementById("messages").scrollHeight);
+        });
+        socket.on('userdisconected', (msg)=>{
+            var item = document.createElement('div');
+            item.textContent = msg;
+            item.classList.add("server-message");
+            messages.appendChild(item);
+            window.scrollTo(0, document.getElementById("messages").scrollHeight);
+        });
+    </script>
+</body>
+</html>
