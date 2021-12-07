@@ -99,7 +99,7 @@
         }
         .modal{
             position: fixed;
-            z-index: 10000;
+            z-index: 100;
             left: 0;
             top: 0;
             display: flex;
@@ -123,6 +123,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            z-index: 1000;
         }
         .center-column{
             display: flex;
@@ -147,7 +148,7 @@
                 <form id="form-nick" autocomplete="off"><input type="text" id="input-nick"class="input"></form>
             </div>
             <div id="users" class="center-column hidden">
-                <span>Usuarios Conectados</span>
+                <span id="user-list-span">Usuarios Conectados</span>
                 <ul id="user-list"></ul>
             </div>
         </div>
@@ -176,6 +177,12 @@
                 socket.emit('register', input.value);
                 document.getElementById("modal").style.display="none";
                 document.getElementById("register").style.display="none";
+                document.getElementById("modal").addEventListener("click", (e)=>{
+                    if(e.target.id === "modal" ){
+                        document.getElementById("modal").style.display="none";
+                        document.getElementById("users").classList.toggle("hidden");
+                    }
+                });
             }
             let item = document.createElement('div');
             item.textContent = "Te has unido al chat";
