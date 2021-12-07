@@ -17,6 +17,7 @@ var userlist = [];
 app.get('/', (req, res) =>{
     res.sendFile(path.join(__dirname,'..', 'client/index.html'));
 });
+app.use(express.static('public'));
 
 io.on('connection', (socket) => {
     let username;  
