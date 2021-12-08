@@ -10,14 +10,25 @@ document.getElementById("form-nick").addEventListener("submit", (e)=>{
     e.preventDefault();
     let input = document.getElementById("input-nick");
     if(input.value){
-        socket.emit('register', input.value);
-        modalwindow.style.display="none";
-        document.getElementById("register").style.display="none";
-        modalwindow.addEventListener("click", (e)=>{
-            if(e.target.id === "modal" ){
-                modalwindow.style.display="none";
-                userswindow.classList.toggle("hidden");
+        socket.emit('register', input.value, async (response)=>{
+            input.style.display="none";
+            if(response.status !== "ok"){
+                document.getElementById("labelregister").innerHTML=`<p>Ya existe un usuario con ese nombre. <br> Su nombre de usuario será: ${response.nick} </p>`;
+                setTimeout(()=>{
+                    modalwindow.style.display="none";
+                    document.getElementById("register").style.display="none";
+                }, 2000);
             }
+            else{
+                modalwindow.style.display="none";
+                document.getElementById("register").style.display="none";
+            }
+            modalwindow.addEventListener("click", (e)=>{
+                if(e.target.id === "modal" ){
+                    modalwindow.style.display="none";
+                    userswindow.classList.toggle("hidden");
+                }
+            });
         });
     }
     let item = document.createElement('div');
@@ -44,11 +55,14 @@ document.getElementById("form").addEventListener("submit", (e)=>{
 });
 socket.on('message', (msg)=>{
     let item = document.createElement('div');
-    item.textContent = msg;
+    let content = document.createElement('p');
     let sender= document.createElement('label');
-    sender.innerText="Santisender";
-    item.appendChild(sender);
+    sender.classList.add("sender");
     item.classList.add("message", "received");
+    sender.innerText=msg.sender;
+    content.innerText = msg.msg;
+    item.appendChild(sender);
+    item.appendChild(content);
     messages.appendChild(item);
     window.scrollTo(0, messages.scrollHeight);
 });
