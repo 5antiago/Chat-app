@@ -1,5 +1,12 @@
 "Use strict"
 Notification.requestPermission();
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js');
+    });
+}
+
 const socket = io();
 const messages = document.getElementById("messages");
 const modalwindow = document.getElementById("modal");
@@ -75,11 +82,12 @@ socket.on('message', (msg)=>{
     messages.appendChild(item);
     window.scrollTo(0, messages.scrollHeight);
     if(!windowfocused){
-
-        new Notification("Nuevo mensaje", {
+        navigator.serviceWorker.ready.then(reg =>{
+            reg.showNotification("Nuevo mensaje", {
             body: msg.msg,
             timeout: 5000,
             vibrate: [1000, 1000, 1000]
+        })
         });
     }
 });
