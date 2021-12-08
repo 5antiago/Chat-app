@@ -1,11 +1,19 @@
 "Use strict"
-Push.Permission.request();
+Notification.requestPermission();
 const socket = io();
 const messages = document.getElementById("messages");
 const modalwindow = document.getElementById("modal");
 const userswindow = document.getElementById("users");
 const userscountlabel = document.getElementById("users-connected");
 const typinglabel = document.getElementById("typing");
+var windowfocused=true;
+
+window.onfocus = ()=>{
+    windowfocused = true;
+}
+window.onblur = ()=>{
+    windowfocused = false;
+}
 
 document.getElementById("form-nick").addEventListener("submit", (e)=>{
     e.preventDefault();
@@ -66,14 +74,14 @@ socket.on('message', (msg)=>{
     item.appendChild(content);
     messages.appendChild(item);
     window.scrollTo(0, messages.scrollHeight);
-    if(!document.hasFocus()){
-        Push.create('Nuevo mensaje', {
+    if(!windowfocused){
+
+        new Notification("Nuevo mensaje", {
             body: msg.msg,
             timeout: 5000,
             vibrate: [1000, 1000, 1000]
         });
     }
-    
 });
 let lasttime = Date.now();
 let timer = setTimeout(()=>{
