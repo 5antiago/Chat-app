@@ -1,4 +1,5 @@
 "Use strict"
+Push.Permission.request();
 const socket = io();
 const messages = document.getElementById("messages");
 const modalwindow = document.getElementById("modal");
@@ -65,6 +66,14 @@ socket.on('message', (msg)=>{
     item.appendChild(content);
     messages.appendChild(item);
     window.scrollTo(0, messages.scrollHeight);
+    if(!document.hasFocus()){
+        Push.create('Nuevo mensaje', {
+            body: msg.msg,
+            timeout: 5000,
+            vibrate: [1000, 1000, 1000]
+        });
+    }
+    
 });
 let lasttime = Date.now();
 let timer = setTimeout(()=>{
