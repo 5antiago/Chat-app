@@ -132,7 +132,7 @@ li{
 }
 ul li::before{
     content: "\2022";
-    color: #7fffd4;
+    color: #fff23f;
     display: inline-block;
     width: 1rem;
     font-weight: bold;
