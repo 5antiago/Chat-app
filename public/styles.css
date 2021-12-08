@@ -122,8 +122,20 @@ h2{
 }
 ul{
     padding: 0;
-    list-style: circle;
+    list-style: none;
     overflow-wrap: anywhere;
-    margin: 2rem;
+    margin: 1rem;
+}
+li{
+    display: flex;
+    align-items: center;
+}
+ul li::before{
+    content: "\2022";
+    color: #7fffd4;
+    display: inline-block;
+    width: 1rem;
+    font-weight: bold;
+    font-size: x-large;
 }
 .hidden{display: none;}

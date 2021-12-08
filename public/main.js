@@ -45,6 +45,9 @@ document.getElementById("form").addEventListener("submit", (e)=>{
 socket.on('message', (msg)=>{
     let item = document.createElement('div');
     item.textContent = msg;
+    let sender= document.createElement('label');
+    sender.innerText="Santisender";
+    item.appendChild(sender);
     item.classList.add("message", "received");
     messages.appendChild(item);
     window.scrollTo(0, messages.scrollHeight);
